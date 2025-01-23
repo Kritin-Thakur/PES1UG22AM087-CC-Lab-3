@@ -1,9 +1,6 @@
 import json
-
-import products
 from cart import dao
-from products import Product
-
+from products import Product, get_product
 
 class Cart:
     def __init__(self, id: int, username: str, contents: list[Product], cost: float):
@@ -18,23 +15,11 @@ class Cart:
 
 def get_cart(username: str) -> list:
     cart_details = dao.get_cart(username)
-    if cart_details is None:
+    if not cart_details:
         return []
     
-    items = []
-    for cart_detail in cart_details:
-        contents = cart_detail['contents']
-        evaluated_contents = eval(contents)  
-        for content in evaluated_contents:
-            items.append(content)
-    
-    i2 = []
-    for i in items:
-        temp_product = products.get_product(i)
-        i2.append(temp_product)
-    return i2
-
-    
+    items = [content for cart_detail in cart_details for content in eval(cart_detail['contents'])]
+    return [get_product(i) for i in items]
 
 
 def add_to_cart(username: str, product_id: int):
@@ -43,6 +28,7 @@ def add_to_cart(username: str, product_id: int):
 
 def remove_from_cart(username: str, product_id: int):
     dao.remove_from_cart(username, product_id)
+
 
 def delete_cart(username: str):
     dao.delete_cart(username)
